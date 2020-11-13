@@ -1,0 +1,4 @@
+github.com/BurntSushi/toml v0.3.1 h1:WXkYYl6Yr3qBf1K79EBnL4mak0OimBfB0XUf9Vl28OQ=
+github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
+github.com/g4zhuj/hashring v0.0.0-20180426073119-5d542568fdbd h1:FjwbWhR+yxNuQrGWu6/bN76+TlbMxDFUgjj0FcCyFDs=
+github.com/g4zhuj/hashring v0.0.0-20180426073119-5d542568fdbd/go.mod h1:9zdNtZS41ZZRfkQBuvhJxk/tKVdJewHxaUNajTPTUAU=
