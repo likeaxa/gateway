@@ -1,8 +1,7 @@
 package config
 
 import (
-	"github.com/g4zhuj/hashring"
-	"minGateway/gateway"
+	"miniGateway/gateway"
 	"strings"
 )
 
@@ -44,15 +43,6 @@ func getHostInfo(proxyInfo ProxyInfo) gateway.HostInfo {
 		//定义了多个目标，使用分流
 		targets := proxyInfo.Target
 		hostInfo = gateway.HostInfo{IsMultiTarget: true, MultiTarget: targets, MultiTargetMode: gateway.ObtainMode(proxyInfo.ObtainMode)}
-		if proxyInfo.ObtainMode == 3 { //哈希模式
-			//把节点放到hashring中，同时设置权重
-			hostInfo.HashRing = hashring.NewHashRing(100) //vitualSpots=100
-			nodeWeight := make(map[string]int)
-			for _, target := range targets {
-				nodeWeight[target] = 1 //这里简化了，权重都设置为1
-			}
-			hostInfo.HashRing.AddNodes(nodeWeight)
-		}
 	}
 	return hostInfo
 }

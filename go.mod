@@ -1,4 +1,4 @@
-module minGateway
+module miniGateway
 
 go 1.15
 

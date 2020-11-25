@@ -2,7 +2,7 @@ package config
 
 import (
 	"fmt"
-	"minGateway/gateway"
+	"miniGateway/gateway"
 	"testing"
 )
 

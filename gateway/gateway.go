@@ -2,9 +2,7 @@ package gateway
 
 import (
 	"fmt"
-	"github.com/g4zhuj/hashring"
 	"math/rand"
-	"minGateway/common"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -17,26 +15,17 @@ type ObtainMode int //多转发目标时的选择模式
 const (
 	SelectModeRandom ObtainMode = 1 //随机选择
 	SelectModePoll   ObtainMode = 2 //轮询选择
-	SelectModeHash   ObtainMode = 3 //哈希选择
 )
 
 type HostInfo struct {
-	Target          string             //转发目标域名
-	MultiTarget     []string           //有多转发目标的域名集合
-	IsMultiTarget   bool               //是否有多转发目标
-	MultiTargetMode ObtainMode         //多转发目标选择模式
-	PoolModeIndex   int                //轮询模式索引
-	HashRing        *hashring.HashRing //一致性哈希
+	Target          string     //转发目标域名
+	MultiTarget     []string   //有多转发目标的域名集合
+	IsMultiTarget   bool       //是否有多转发目标
+	MultiTargetMode ObtainMode //多转发目标选择模式
+	PoolModeIndex   int        //轮询模式索引
 }
 
-var (
-	readTimeout    int //读超时
-	writeTimeout   int //写超时
-	idleTimeout    int //闲置超时
-	maxHeaderBytes int //最大头字节
-)
-
-//缺省转发，如果配置文件上定义了缺省转发，那么有消息进入时没找到已定义的转发地址就转发到缺省定义上
+//默认转发地址
 var DefaultTarget *HostInfo
 
 var HostList map[string]HostInfo
@@ -57,9 +46,6 @@ func (hostInfo *HostInfo) GetTarget(req *http.Request) string {
 			route = hostInfo.MultiTarget[hostInfo.PoolModeIndex]
 			hostInfo.PoolModeIndex++
 			hostInfo.PoolModeIndex = hostInfo.PoolModeIndex % len(hostInfo.MultiTarget)
-		} else if hostInfo.MultiTargetMode == SelectModeHash { //哈希模式
-			ips := common.GetIpAddr(req)
-			route = hostInfo.HashRing.GetNode(ips[0])
 		} else { //未配置或配置错误使用随机模式
 			route = hostInfo.MultiTarget[rand.Int()%len(hostInfo.MultiTarget)]
 		}
@@ -103,7 +89,7 @@ func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		proxy := newHostReverseProxy(target)
 		proxy.ServeHTTP(w, r)
 	}
-	fmt.Println("耗时：", time.Now().Sub(in).Seconds(), "秒")
+	fmt.Println("耗时：", time.Now().Sub(in).Milliseconds(), "毫秒")
 }
 func singleJoiningSlash(a, b string) string {
 	aslash := strings.HasSuffix(a, "/")
@@ -127,15 +113,6 @@ func newHostReverseProxy(target *url.URL) *httputil.ReverseProxy {
 		} else {
 			req.URL.RawQuery = targetQuery + "&" + req.URL.RawQuery
 		}
-		if _, ok := req.Header["User-Agent"]; !ok {
-			// explicitly disable User-Agent so it's not set to default value
-			req.Header.Set("User-Agent", "")
-		}
-		req.Header["X-Real-Ip"] = common.GetIpAddr(req)
-		fmt.Println("X-Real-Ip=", req.Header["X-Real-Ip"])
-		//for k, v := range req.Header {
-		//	log.Debug(k, v)
-		//}
 	}
 	return &httputil.ReverseProxy{Director: director}
 }
@@ -148,8 +125,6 @@ func (s *GateServer) proxy8080() error {
 	if err != nil {
 		panic(err)
 	}
-
-
 	return nil
 }
 func (s *GateServer) Run() error {

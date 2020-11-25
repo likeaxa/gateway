@@ -1,32 +1,22 @@
 package config
 
-import (
-	"fmt"
-	"github.com/BurntSushi/toml"
-	"sync"
-)
 type ProxyConfig struct {
-	HttpProxy map[string]ProxyInfo `toml:"proxyInfo"`
+	HttpProxy map[string]ProxyInfo
 }
 
 type ProxyInfo struct {
-	Host       string   `toml:"host"`
-	Target     []string `toml:"target"`
-	ObtainMode int      `toml:"obtainMode"`
+	Host       string
+	Target     []string
+	ObtainMode int
 }
-var (
-	cfg  ProxyConfig
-	once sync.Once
-)
 
 func Get() *ProxyConfig {
-	once.Do(func() {
-		cfg = ProxyConfig{}
-		filePath := "/Users/yaoxinjian/Documents/视频/go/miniGateway/bin/config/conf.txt"
-		if _, err := toml.DecodeFile(filePath, &cfg); err != nil {
-			panic(err)
-		}
-		fmt.Printf("读取配置文件: %s\n", filePath)
-	})
+	data := GetMockConfigData()
+	cfg := ProxyConfig{}
+	cfg.HttpProxy = make(map[string]ProxyInfo)
+	for i := 0; i < len(data); i++ {
+		info := data[i]
+		cfg.HttpProxy[info.Host] = info
+	}
 	return &cfg
 }

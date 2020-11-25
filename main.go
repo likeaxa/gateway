@@ -1,8 +1,8 @@
 package main
 
 import (
-	"minGateway/config"
-	"minGateway/gateway"
+	"miniGateway/config"
+	"miniGateway/gateway"
 )
 
 func main() {
