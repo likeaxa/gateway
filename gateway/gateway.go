@@ -89,7 +89,9 @@ func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		proxy := newHostReverseProxy(target)
 		proxy.ServeHTTP(w, r)
 	}
-	fmt.Println("耗时：", time.Now().Sub(in).Milliseconds(), "毫秒")
+	go func() {
+		fmt.Println(time.Now().Format("2006-01-02 15:04:05")+"耗时：", time.Now().Sub(in).Seconds(), "秒")
+	}()
 }
 func singleJoiningSlash(a, b string) string {
 	aslash := strings.HasSuffix(a, "/")
