@@ -30,8 +30,13 @@ var DefaultTarget *HostInfo
 
 var HostList map[string]HostInfo
 
+// 缓存代理对象
+var ProxyCache map[string]httputil.ReverseProxy
+
 func init() {
+
 	HostList = make(map[string]HostInfo)
+	ProxyCache = make(map[string]httputil.ReverseProxy)
 }
 
 type GateServer struct{}
@@ -85,14 +90,24 @@ func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			fmt.Println("url.Parse失败")
 			return
 		}
+		// 缓存获取 缓存获取不到 new Proxy
+		if proxy, ok := ProxyCache[route]; ok {
+			proxy.ServeHTTP(w, r)
+		} else {
+			proxy := newHostReverseProxy(target)
+			ProxyCache[route] = *proxy
+			go func() {
+				fmt.Println(time.Now().Format("2006-01-02 15:04:05") + "： target" + "添加进缓存：")
+			}()
+			proxy.ServeHTTP(w, r)
+		}
 
-		proxy := newHostReverseProxy(target)
-		proxy.ServeHTTP(w, r)
 	}
 	go func() {
 		fmt.Println(time.Now().Format("2006-01-02 15:04:05")+"耗时：", time.Now().Sub(in).Seconds(), "秒")
 	}()
 }
+
 func singleJoiningSlash(a, b string) string {
 	aslash := strings.HasSuffix(a, "/")
 	bslash := strings.HasPrefix(b, "/")
