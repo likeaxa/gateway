@@ -79,7 +79,7 @@ func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			route = DefaultTarget.GetTarget(r)
 			existRoute = true
 		} else {
-			fmt.Println(r.Host + ":" + "获取不到路由")
+			fmt.Println(r.RemoteAddr + ":" + "获取不到路由")
 			return
 		}
 	}
@@ -87,7 +87,7 @@ func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if existRoute {
 		target, err := url.Parse(route)
 		if err != nil {
-			fmt.Println(r.Host + ":" + "url.Parse失败")
+			fmt.Println(r.RemoteAddr + ":" + "url.Parse失败")
 			return
 		}
 		// 缓存获取 缓存获取不到 new Proxy
@@ -97,14 +97,14 @@ func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			proxy := newHostReverseProxy(target)
 			ProxyCache[route] = *proxy
 			go func() {
-				fmt.Println(r.Host + ":" + time.Now().Format("2006-01-02 15:04:05") + "： target" + "添加进缓存：")
+				fmt.Println(r.RemoteAddr + ":" + time.Now().Format("2006-01-02 15:04:05") + "： target" + "添加进缓存：")
 			}()
 			proxy.ServeHTTP(w, r)
 		}
 
 	}
 	go func() {
-		fmt.Println(time.Now().Format(r.Host+":"+"2006-01-02 15:04:05")+"耗时：", time.Now().Sub(in).Seconds(), "秒")
+		fmt.Println(r.RemoteAddr+":"+time.Now().Format("2006-01-02 15:04:05")+"耗时：", time.Now().Sub(in).Seconds(), "秒")
 	}()
 }
 
